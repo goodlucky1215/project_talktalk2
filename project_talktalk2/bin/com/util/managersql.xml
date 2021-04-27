@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mybatis.ProcMapper1">
+
+	<resultMap type="map" id="memberlist">
+		<result column="mem_no" property="mem_no"/>
+		<result column="mem_name" property="mem_name"/>
+		<result column="dept_name" property="dept_name"/>
+		<result column="mem_level" property="mem_level"/>
+	</resultMap>
+	<!-- cursor를 사용할땐 반드시 불러올때 class로 받아와야 사용이 가능하다 -->
+	<select id="refresh" statementType="CALLABLE"  parameterType="java.util.Map">
+		{CALL proc_select_Allemp(
+					    #{p_temp, mode=OUT, jdbcType=CURSOR, resultMap=memberlist})}
+	</select>
+
+
+	
+</mapper>

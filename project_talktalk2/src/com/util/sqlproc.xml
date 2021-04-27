@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mybatis.ProcMapper">
+ <resultMap type="map" id="selectMapList">
+  <!--column은 지금 이 xml 파일이 받는 것이고, 결과값인 코드가 property를 받는다.이게 key로 들어감 !-->
+ 	 <result column="room_name" property="room_name"/> 
+ 	<result column="room_no" property="room_no"/> 
+ 	<result column="room_typeidentity" property="room_typeidentity"/> 
+ </resultMap>
+
+  <resultMap type="map" id="memInfo">
+  <!--column은 지금 이 xml 파일이 받는 것이고, 결과값인 코드가 property를 받는다.이게 key로 들어감 !-->
+ 	<result column="DEPT_NAME" property="p_dept_name"/> 
+ 	<result column="MEM_NO" property="p_no"/> 
+ 	<result column="MEM_NAME" property="p_mem_name"/> 
+ 	<result column="MEM_STATE" property="p_mem_state"/> 
+ 	<result column="MEM_LEVEL" property="p_mem_level"/> 
+ </resultMap>
+ 
+  <resultMap type="map" id="conver">
+  <!--column은 지금 이 xml 파일이 받는 것이고, 결과값인 코드가 property를 받는다.이게 key로 들어감 !-->
+ 	<result column="CONVER_TEXT" property="conver_text"/> 
+ 	<result column="MEM_NAME" property="mem_name"/> 
+ </resultMap>
+<!-- 1.로그인 및 회원가입 -->	
+	<!-- 1-1. 로그인 프로시저 실행문 -->
+	<select id="chat_login" statementType="CALLABLE" parameterType="java.util.Map">
+		{CALL proc_login(
+						#{p_no},
+						#{p_pw},
+					    #{msg, mode=OUT, jdbcType=VARCHAR},
+					    #{r_state, mode=OUT, jdbcType=VARCHAR},
+					    #{p_name, mode=OUT, jdbcType=VARCHAR}
+				   )
+		}
+	</select>
+	<!-- 1-2. 회원가입 프로시저 실행문 -->
+	<select id="chat_signup" statementType="CALLABLE" parameterType="java.util.Map">
+		{CALL proc_SignUp(#{p_dept_name}
+		   				, #{p_no}
+		   				, #{p_pw}
+		   				, #{p_mem_name}
+		   				, #{p_mem_level}
+		   				, #{r_state, mode=OUT, jdbcType=VARCHAR}
+		   				, #{msg, mode=OUT, jdbcType=VARCHAR})}
+	</select>
+
+	<!-- 1-3. 사원 목록 다 가져오기 -->
+	<select id="chat_mainList" statementType="CALLABLE" parameterType="java.util.Map">
+		{CALL PROC_MAINLIST(#{p_no}
+		   				, #{p_temp, mode=OUT, jdbcType=CURSOR, resultMap=memInfo})}
+	</select>
+	
+	
+		<!-- 2-3. 방 개설 프로시저 실행 -->
+	<select id="create_Room" statementType="CALLABLE" parameterType="java.util.Map">
+		{CALL proc_CreateRoom(#{p_Room_Name}
+							, #{p_room_type}
+						    , #{p_room_num, mode=OUT, jdbcType=INTEGER})}
+	</select>
+	
+	
+		<!-- 2-4. 방 안에 사람 넣기 프로시저 실행 -->
+	<select id="inChat_Member" statementType="CALLABLE" parameterType="java.util.Map">
+		{CALL proc_createroom2(#{p_Room_no}
+							 , #{p_MemNo}
+							 , #{p_temp, mode=OUT, jdbcType=CURSOR, resultMap=memInfo})}
+							 
+	</select>
+	
+		<!-- 3.채팅목록창 -->
+
+	<!-- 3-1. 내 채팅방만 띄우기 프로시저 실행 -->
+	<select id="myChat_list" statementType="CALLABLE" parameterType="java.util.Map">
+		{CALL proc_My_Chatting_Room(#{p_mem_no}
+								  , #{p_temp, mode=OUT, jdbcType=CURSOR, resultMap=selectMapList})}
+	</select>
+	
+	<!-- 3-2. 입장되지 않은 그룹 채팅방만 띄우기 프로시저 실행 -->
+	<select id="notEgroup_list" statementType="CALLABLE" parameterType="java.util.Map">
+		{CALL proc_Group_Chatting_Room(#{p_mem_no}
+									 , #{p_temp, mode=OUT, jdbcType=CURSOR, resultMap=selectMapList})}
+	</select>
+	
+		<!-- 3-3. 개인 채팅방 존재여부 프로시저 실행 -->
+	<select id="proc_CreateRoom_Indi" statementType="CALLABLE" parameterType="java.util.Map">
+		{CALL proc_CreateRoom_Indi(#{p_me}
+								  , #{p_you}
+								  , #{result, mode=OUT, jdbcType=INTEGER}
+								  , #{re_me, mode=OUT, jdbcType=INTEGER}
+								  , #{re_you, mode=OUT, jdbcType=INTEGER})
+								  }
+	</select>
+	
+	
+		<!-- 4-1.대화 안 사람들 -->
+	<select id="getRoom_member" parameterType="int" resultMap="memInfo">
+		SELECT mem.mem_no as "MEM_NO", mem.mem_name as "MEM_NAME" 
+		FROM room_ppl rp, member mem
+		WHERE rp.room_no =#{room_no} AND rp.ppl_being = 1 AND rp.mem_no = mem.mem_no
+	</select>
+	
+		<!-- 4-2.대화내용 -->
+	<select id="getConver" parameterType="int" resultMap="conver">
+		SELECT con.conver_text as "CONVER_TEXT", mem.mem_name as "MEM_NAME"
+		FROM CONVERSATION con, MEMBER  mem
+		WHERE con.room_no =#{room_no} AND con.mem_no=mem.mem_no
+		ORDER BY con.conver_no
+	</select>
+	
+	<!-- 4-3.방나가기-->
+	<select id="exit_Room" statementType="CALLABLE"  parameterType="java.util.Map">
+		{CALL proc_room_exit(#{p_mem_no}
+						   , #{p_room_no}
+						   , #{room_type, mode=OUT, jdbcType=INTEGER}
+						   , #{room_being, mode=OUT, jdbcType=INTEGER})
+						   }
+	</select>
+	
+	
+	<!-- 4-5.대화방에 클라이언트 추가 -->
+	<select id="sendMessage" parameterType="map">
+		{CALL proc_conversation_add(#{room_no}
+								  , #{mem_no}
+								  , #{conver_text})
+								  }
+	</select>
+	
+	<!-- 4-6.대화방에 클라이언트 추가 -->
+	<select id="getingroup" parameterType="map">
+		{CALL proc_Get_IN_Group(#{mem_no}
+						, #{room_no})}
+	</select>
+	
+	<!-- 1대1일때 상대가 나간상태라면 다시 불러오기 -->
+	<select id="putyou" statementType="CALLABLE"  parameterType="java.util.Map">
+		{CALL proc_put_you(#{mem_no}
+						, #{room_no}
+						, #{p_value, mode=OUT, jdbcType=INTEGER })
+						 }
+	</select>
+	<!-- 5.설정창 -->
+
+	<!-- 5-1.내 정보 불러오기 프로시저 실행 -->
+	<select id="myInfo" parameterType="int" resultMap="memInfo">
+		SELECT m.mem_name as MEM_NAME ,d.dept_name as DEPT_NAME,m.mem_level as MEM_LEVEL FROM member m, dept d WHERE m.mem_no = #{p_no} AND m.dept_no = d.dept_no
+	</select>
+
+	<!-- 5-2.사용자 상태 수정하기 프로시저 실행 -->
+	<update id="update_MyState">
+		UPDATE MEMBER SET mem_state=#{p_state, jdbcType=VARCHAR} WHERE mem_no = #{p_no}
+	</update>
+	
+
+	
+</mapper>
