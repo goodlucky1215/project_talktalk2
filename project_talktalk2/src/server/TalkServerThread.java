@@ -587,29 +587,24 @@ public class TalkServerThread extends Thread {
 						//그 room의 스레드가 필요하다. 그렇기때문에 그 방이 존재하는지 안하는지를 먼저 확인한다.
 						//roomList 존재한다면 그 room가져와서 지금 들어오는 클라이언트스래드를 넣고 broadCasting주고
 						Room grouproom = null;
-						ts.jta_log.append("getIngroup1\n");
 						//들어오는 자신에게만 전달
-						ts.jta_log.append("getIngroup4\n");
 						this.send(Protocol.GROUPROOM_IN
 								 +Protocol.seperator+room_num //방번호
 								 +Protocol.seperator+mem_no //내번호
 						 		 +Protocol.seperator+mem_name); //내이름
 						//내 방 리스트에 추가하기
-						ts.jta_log.append("getIngroup5\n");
 						this.send(Protocol.ROOM_CREATE
 								+Protocol.seperator+"ADD"     //방 목록에 추가해준다는 의미
 					  			+Protocol.seperator+room_num //방번호
 								+Protocol.seperator+room_name //방이름
 								);
 						//그룹 방 리스트에서 없애기
-						ts.jta_log.append("getIngroup6\n");
 						this.send(Protocol.GROUP_LIST
 								+Protocol.seperator+"DEL"    //그룹방 목록에서 뺀다는 얘기
 								+Protocol.seperator+room_num //방번호
 								+Protocol.seperator+room_name //방이름
 								);
 						for(Room room:ts.roomList) {
-							ts.jta_log.append("getIngroup2\n");
 							if(room.getRoom_num() == room_num) {
 								//그 방 안에서 사람들에게 자신이 들어왔음을 목록에 추가해줘야함.
 								//새로운 애가 들어오기 전에 먼저 목록에 그 애를 추가 시켜준다.
@@ -627,7 +622,6 @@ public class TalkServerThread extends Thread {
 						//roomList 존재 안한다면 새로 roomList에 추가해주고 지금 들어오는 클라이언트스래드를 넣고 broadCasting
 						//존재 안한다는건 현재 접속자중에서 쓰는 사람이 없다는 거니깐 대화창안에서의 사람추가를안해줘도 된다.
 						if(grouproom==null) {
-							ts.jta_log.append("getIngroup3\n");
 							grouproom= new Room();
 							grouproom.setRoom_num(room_num);
 							grouproom.setTitle(room_name);
@@ -667,31 +661,27 @@ public class TalkServerThread extends Thread {
 					/////방 삭제하기
 					case Protocol.ROOM_DEL:{
 						////나가려는 방번호
-						ts.jta_log.append("1\n");
+						ts.jta_log.append("나가려는 방\n");
 						int room_num = Integer.parseInt(st.nextToken());
 						String room_name = st.nextToken();
-						ts.jta_log.append("2\n");
 						int room_mem_num = mem_no;
 						//그룹에서 나간건지, 개인방에서 나간건지 dao로 받기, 방이 아예삭제 됬는지에대한 여부도 dao로 받기
 						Map<String,Object> exitroom = ts.rNcDao.getExitRoom(room_num,room_mem_num);
-						ts.jta_log.append("3\n");
 						//개인방이면 1, 그룹이면 2
 						int room_type = Integer.parseInt(exitroom.get("room_type").toString());
-						ts.jta_log.append(room_type+"\n");
+						ts.jta_log.append("개인방이면 1, 그룹이면 2: "+room_type+"\n");
 						//방이 아예삭제 되었다면 1, 아직 존재한다면 2
 						int room_being = Integer.parseInt(exitroom.get("room_being").toString());
-						ts.jta_log.append("5\n");
 						//방이 아예 삭제 된다면 roomList에서 room에서 비우기
 					/////만약 그룹방이고 그 방이 남아있다면 그룹방 리스트에 추가하기
 						if(room_type==2) {
-							ts.jta_log.append("9\n");
+							ts.jta_log.append("그룹방 리스트 추가\n");
 							this.send(Protocol.GROUP_LIST
 									+Protocol.seperator+"ADD"     //방 목록에 추가해준다는 의미
 									+Protocol.seperator+room_num  //방번호
 									+Protocol.seperator+room_name //방이름
 									);
 						}
-						ts.jta_log.append("99\n");
 						//내 방 리스트에 삭제하기
 						this.send(Protocol.ROOM_CREATE
 								 +Protocol.seperator+"DEL"     //방 목록에 추가해준다는 의미
@@ -701,14 +691,12 @@ public class TalkServerThread extends Thread {
 						
 						this.send(Protocol.ROOM_DEL+""); //보낼 프로토콜
 						if(room_being==1) {
-							ts.jta_log.append("6\n");
 							for(int i=0;i<ts.roomList.size();i++) {
 								if(ts.roomList.get(i).getRoom_num()==room_num) {
 									ts.roomList.remove(i);
 									break;
 								}
 							}
-							ts.jta_log.append("7\n");
 							///모든 사람의 그룹방 목록에서 제거시키기
 							this.broadCastingAll(Protocol.GROUP_LIST
 									+Protocol.seperator+"DEL"     //방 목록에 추가해준다는 의미
@@ -717,25 +705,17 @@ public class TalkServerThread extends Thread {
 									);
 						}
 						else if(room_being==2) {
-							ts.jta_log.append("8\n");
 							/////그 방을 찾아서 스래드 삭제, 채팅 목록에서 삭제
 							for(int i=0;i<ts.roomList.size();i++) {
 								if(ts.roomList.get(i).getRoom_num()==room_num) {
-									ts.jta_log.append("9-1-1\n");
 									for(int j=0;j<ts.roomList.get(i).userList.size();j++) {
 										//////나가는 사람의 스래드랑 번호 지워주기
-										ts.jta_log.append("9-1-2\n");
 										if(ts.roomList.get(i).userList.get(j)==this) {
-											ts.jta_log.append("9-1\n");
 											ts.roomList.get(i).userList.remove(j);
-											ts.jta_log.append("9-1\n");
 											ts.roomList.get(i).mem_no.remove(j);
-											ts.jta_log.append("9-1\n");
 										}
 									}
-									ts.jta_log.append("9-1\n");
 									if(ts.roomList.get(i).userList.size()>0) {
-										ts.jta_log.append("9-2\n");
 										////방이 현존한다면+지금 접속해 있는 사람들 중에 그 방에 들어가 있는 사람이라면, 나간 사람 표시해주기
 										this.broadCasting(Protocol.CHAT_IN
 												+Protocol.seperator+"DEL" //특정 사람 삭제하기
@@ -745,7 +725,6 @@ public class TalkServerThread extends Thread {
 									}
 								}
 							}
-							ts.jta_log.append(room_type+"\n");
 							
 						}
 						ts.jta_log.append("방나가기끝\n");

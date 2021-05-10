@@ -148,7 +148,6 @@ public class TalkClientThread extends Thread{
 						else if("DEL".equals(room_GI)){
 							for(int i=0;i<tc.menuListView.gp.group_dtm.getRowCount();i++) {
 								if(Integer.parseInt(tc.menuListView.gp.group_dtm.getValueAt(i, 0).toString())==room_GI_num) {
-									System.out.println("dfs");
 									tc.menuListView.gp.group_dtm.removeRow(i);
 									break;
 								}
@@ -186,7 +185,6 @@ public class TalkClientThread extends Thread{
 						///방 안 사람들 뷰에 보이도록
 						System.out.println("------------방 안 사람들-------------");
 						for(Map member:listMap) {
-							System.out.println(member.get("p_mem_name")+" "+member.get("p_no"));
 							Vector onerow = new Vector();
 							onerow.add(member.get("p_no"));
 							onerow.add(member.get("p_mem_name"));
@@ -197,7 +195,6 @@ public class TalkClientThread extends Thread{
 						System.out.println("--------------대화 내용-----------");
 						if(converlistMap!=null) {
 							for(Map con:converlistMap) {
-								System.out.println("["+con.get("mem_name")+"]"+con.get("conver_text"));
 								cdView.showChat_jta.append("["+con.get("mem_name")+"]"+con.get("conver_text")+"\n");
 							}
 						}
@@ -282,9 +279,9 @@ public class TalkClientThread extends Thread{
 						//System.out.println("[이름]"+st.nextToken());
 						//System.out.println("[부서]"+st.nextToken());
 						//System.out.println("[직급]"+st.nextToken());
-						System.out.println(tc.menuListView.cbp.cscp.config_Status_dtm.getValueAt(0, 0));
-						System.out.println(tc.menuListView.cbp.cscp.config_Status_dtm.getValueAt(1, 0));
-						System.out.println(tc.menuListView.cbp.cscp.config_Status_dtm.getValueAt(2, 0));
+						//System.out.println(tc.menuListView.cbp.cscp.config_Status_dtm.getValueAt(0, 0));
+						//System.out.println(tc.menuListView.cbp.cscp.config_Status_dtm.getValueAt(1, 0));
+						//System.out.println(tc.menuListView.cbp.cscp.config_Status_dtm.getValueAt(2, 0));
 						tc.menuListView.cbp.cscp.config_Status_dtm.setValueAt(mem_name, 0, 1);
 						tc.menuListView.cbp.cscp.config_Status_dtm.setValueAt(mem_dept, 1, 1);
 						tc.menuListView.cbp.cscp.config_Status_dtm.setValueAt(mem_level, 2, 1);
@@ -293,10 +290,10 @@ public class TalkClientThread extends Thread{
 					case Protocol.MY_STATE :{
 						String mem_state = st.nextToken();
 						String mem_no = st.nextToken();
-						System.out.println(tc.menuListView.mp.dtm.getValueAt(1,0));
-						System.out.println(tc.menuListView.mp.dtm.getValueAt(1,1));
-						System.out.println(tc.menuListView.mp.dtm.getValueAt(1,2));
-						System.out.println(tc.menuListView.mp.dtm.getValueAt(1,3));
+						//System.out.println(tc.menuListView.mp.dtm.getValueAt(1,0));
+						//System.out.println(tc.menuListView.mp.dtm.getValueAt(1,1));
+						//System.out.println(tc.menuListView.mp.dtm.getValueAt(1,2));
+						//System.out.println(tc.menuListView.mp.dtm.getValueAt(1,3));
 						for(int i=0;i<tc.menuListView.mp.dtm.getRowCount();i++) {
 							if(mem_no.equals(tc.menuListView.mp.dtm.getValueAt(i,1).toString())){
 								tc.menuListView.mp.dtm.setValueAt(mem_state, i, 3);
@@ -316,16 +313,13 @@ public class TalkClientThread extends Thread{
 						String room_GI         = st.nextToken();
 						//멤버 목록에 추가
 						if("ADD".equals(room_GI)){							
-							System.out.println(client_mem_no+" "+client_mem_name);
 							System.out.println("멤버 리스트에 생성시켜주기");
 						}
 						else if("UP".equals(room_GI)){							
-							System.out.println(client_mem_no+" "+client_mem_name);
 							System.out.println("멤버 정보 업데이트");
 						}
 						//멤버 목록에 삭제
 						else if("DEL".equals(room_GI)){							
-							System.out.println(client_mem_name+" ");
 							System.out.println("멤버 리스트에서 삭제 시켜주기");
 						}
 					}break;
